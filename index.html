@@ -700,7 +700,7 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
         <div class="sub editable">An AI agent that speaks first when the moment calls for it.</div>
       </div>
       <div class="kill">
-        <div class="lbl"><b>Global pause</b> <span id="gpDesc">Pauses every feed at once.</span></div>
+        <div class="lbl"><b>Global pause</b> <span id="gpDesc">Stops all messages at once.</span></div>
         <div class="switch killsw off"></div>
       </div>
     </div>
@@ -2251,11 +2251,11 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
     if(t.classList.contains('goov')){showTab('overview');return;}
     if(t.classList.contains('killsw')){
       const pausing=t.classList.contains('off');
-      if(pausing&&!confirm('Global pause — every feed is paused.\n\nNothing goes out until you switch this back on. Drafts waiting for review stay in the queue.'))return;
+      if(pausing&&!confirm('Global pause — stop all messages?\n\nNothing goes out until you switch it off. Drafts waiting for review stay in the queue.'))return;
       t.classList.toggle('off');
       document.body.classList.toggle('killed',pausing);
-      const gd=document.getElementById('gpDesc');if(gd)gd.textContent=pausing?'Every feed is paused. Nothing goes out until you switch this off.':'Pauses every feed at once.';
-      appendAudit('<div class="log human"><div class="t">'+nowT()+'</div><div class="uc2">All use cases</div><div class="who" style="color:var(--red-700)">Global pause <span class="hb">human</span></div><div class="auditline editable">'+(pausing?'Every feed paused by S. Gupta. Nothing goes out until global pause is off.':'Global pause switched off by S. Gupta. Messages resume.')+'</div></div>');
+      const gd=document.getElementById('gpDesc');if(gd)gd.textContent=pausing?'All messages stopped. Nothing goes out until you switch this off.':'Stops all messages at once.';
+      appendAudit('<div class="log human"><div class="t">'+nowT()+'</div><div class="uc2">All use cases</div><div class="who" style="color:var(--red-700)">Global pause <span class="hb">human</span></div><div class="auditline editable">'+(pausing?'S. Gupta stopped all messages. Nothing goes out until global pause is off.':'Global pause switched off by S. Gupta. Messages resume.')+'</div></div>');
       return;
     }
     if(t.closest&&t.closest('#p-guards')&&(t.classList.contains('switch')||t.classList.contains('mchan'))){
