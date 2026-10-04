@@ -621,6 +621,14 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
   .egoalrow{display:none}
   .uc.editing .egoalrow{display:grid;grid-template-columns:160px 1fr;gap:12px;padding:8px 0;border-top:1px solid var(--line-2)}
   .egoalrow .goalin{width:64px}
+  .lockpill{flex-shrink:0;font-size:11.5px;font-weight:600;color:var(--ink-2);background:#F1EFEA;border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .egoalrow .nogoal{display:inline-flex;align-items:center;gap:5px;margin-left:12px;font-size:12.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+  .egoalrow .ginline.nog .gpart{opacity:.4}
+  .egoalrow .nogoal input{width:auto;margin:0;padding:0;flex:none}
+  #cpPanel .uc.cpro .nogoal{pointer-events:none}
+  #cpPanel .uc.cpro .nogoal:not(.on){display:none}
+  #cpPanel .uc.cpro .nogoal input{display:none}
+  #cpPanel .uc.cpro .ginline.nog .gpart{display:none}
   #cpPanel .uc.editing .egoalrow{grid-template-columns:1fr;gap:4px}
   #cpPanel .uc.cpro .edialrow > .uclab{display:none}
   #cpPanel .uc.cpro .edialrow select.f,#cpPanel .uc.cpro .edialrow input.f,#cpPanel .uc.cpro .egoalrow .goalin,#cpPanel .uc.cpro .egoalrow .goalwin{
@@ -902,7 +910,7 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
         <div class="prio"><div class="pnum">6</div><div class="pbody"><span class="editable">Day-1 onboarding</span><span class="badge b-ex b">EX</span><div class="pwhy editable">Time-sensitive, but for employees</div></div><div class="priops"><button class="mini pri-up">↑</button><button class="mini pri-dn">↓</button></div></div>
         <div class="prio"><div class="pnum">7</div><div class="pbody"><span class="editable">Comparison help</span><span class="badge b-green b">Commerce</span><div class="pwhy editable">Sales — can wait a day</div></div><div class="priops"><button class="mini pri-up">↑</button><button class="mini pri-dn">↓</button></div></div>
         <div class="prio"><div class="pnum">8</div><div class="pbody"><span class="editable">Recover the cart</span><span class="badge b-green b">Commerce</span><div class="pwhy editable">Sales — always waits first</div></div><div class="priops"><button class="mini pri-up">↑</button><button class="mini pri-dn">↓</button></div></div>
-        <div class="callout c-blue">Two defaults: <b>service before sales</b>, and <b>fixed deadlines before flexible ones</b>. If one use case keeps waiting, Copilot suggests a new order.</div>
+        <div class="callout c-blue"><b>When two use cases want the same person, the higher one goes first.</b> By default, service comes before sales, and messages with a deadline come before those without one. If a use case keeps waiting its turn, Copilot will suggest moving it up.</div>
       </div>
     </section>
 
@@ -950,11 +958,11 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
             <select><option>recipient-local time</option><option>account timezone</option></select>
           </div></div>
           <div class="switch" onclick="this.classList.toggle('off');this.closest('.switchrow').classList.toggle('off')"></div></div>
-        <div class="switchrow"><div class="txt"><b>Frequency cap</b>
-          <div class="ginline">If two use cases want the same slot, the higher priority goes first. Each person gets up to
+        <div class="switchrow"><div class="txt"><b>Message limit</b>
+          <div class="ginline">Each person gets up to
             <input value="2"> messages per
             <select><option>week</option><option>day</option><option>month</option></select>
-            <select><option>across all domains</option><option>per domain</option></select>
+            <select><option>across all use cases</option><option>per use case</option></select>
           </div></div>
           <div class="switch" onclick="this.classList.toggle('off');this.closest('.switchrow').classList.toggle('off')"></div></div>
         <div class="switchrow"><div class="txt"><b>Credits and refunds</b>
@@ -1377,7 +1385,7 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
       }
       const gd=goalFromText(d,t);if(gd)done.push(gd);
       cpBot(done.length?'Done: <b>'+esc(done.join(', '))+'</b>. You’ll see it in the draft above.<div class="cpacts"><button class="cpbtn pri cpApprove">Approve</button></div>'
-        :'I can change this draft’s goal, autonomy, channels or limit — try “set the goal to −40%”, “add SMS” or “make it review before send”. To change the message, use Change template on the draft.');
+        :'I can change this draft’s goal, autonomy, channels or limit — try “set the goal to −40%”, “no goal”, “add SMS” or “make it review before send”. To change the message, use Change template on the draft.');
       return;
     }
     cpShowDraft();
@@ -1427,7 +1435,7 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
       ed.querySelectorAll('.mchan').forEach(c=>c.classList.toggle('on',on.indexOf(c.textContent.trim())>-1));
       if(d.dataset.pendT){card.dataset.pendT=d.dataset.pendT;const m=card.querySelector('.smsg');if(m&&TPLBODIES[d.dataset.pendT])m.innerHTML=wrapVars(TPLBODIES[d.dataset.pendT]);}
       const dg=d.querySelector('.egoalrow'),cg=card.querySelector('.egoalrow');
-      if(dg&&cg){cg.querySelector('.goalin').value=dg.querySelector('.goalin').value;cg.querySelector('.goalwin').value=dg.querySelector('.goalwin').value;}
+      if(dg&&cg){cg.querySelector('.goalin').value=dg.querySelector('.goalin').value;cg.querySelector('.goalwin').value=dg.querySelector('.goalwin').value;setNoGoal(cg,!!dg.querySelector('.nogoalcb').checked);}
       const dSteps=[...d.querySelectorAll('.pstep .pt .editable')].map(x=>x.textContent);
       card.querySelectorAll('.pstep .pt .editable').forEach((x,i)=>{if(dSteps[i]!==undefined)x.textContent=dSteps[i];});
       saveEdit(card,true);
@@ -1456,6 +1464,12 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
     const ops=card.querySelector('.ucops');
     if(ops&&!ops.querySelector('.prichip')){const chip=document.createElement('span');chip.className='prichip';const fb=ops.querySelector('.badge');fb?ops.insertBefore(chip,fb):ops.prepend(chip);}
     syncRanks();
+    const tb=document.querySelector('#p-overview tbody');
+    if(tb&&![...tb.querySelectorAll('tr b')].some(b=>b.textContent.trim()===name)){
+      const sec2=card.closest('.dsec');const fb2=card.querySelector('.ucops .badge');const G=GOALS[name];
+      const res=G?esc(G.m)+' · now '+esc(G.now)+' · '+(G.none?'no goal':'goal '+esc(G.goal)):'No results yet';
+      tb.insertAdjacentHTML('beforeend','<tr class="dsec" data-d="'+(sec2?sec2.dataset.d:'cx')+'"><td><b>'+esc(name)+'</b></td><td>'+(fb2?fb2.outerHTML:'')+'</td><td class="editable">'+res+'</td></tr>');
+    }
     if(!NAME2FUC[name]){
       const key='u'+(Object.keys(NAME2FUC).length+1);
       NAME2FUC[name]=key;
@@ -1829,15 +1843,25 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
   };
   function goalRowHTML(name){
     const g=GOALS[name];if(!g)return '';
-    return '<div class="uclab">Goal</div><div class="ginline">'+esc(g.m)+' · now '+esc(g.now)+' · goal'
-      +'<input class="goalin" value="'+esc(g.goal)+'">in<select class="goalwin">'
-      +['90 days','60 days','30 days'].map(w=>'<option'+(w===g.win?' selected':'')+'>'+w+'</option>').join('')+'</select></div>';
+    return '<div class="uclab">Goal</div><div class="ginline'+(g.none?' nog':'')+'">'+esc(g.m)+' · now '+esc(g.now)+'<span class="gpart"> · goal'
+      +'<input class="goalin" value="'+esc(g.goal)+'"'+(g.none?' disabled':'')+'>in<select class="goalwin"'+(g.none?' disabled':'')+'>'
+      +['90 days','60 days','30 days'].map(w=>'<option'+(w===g.win?' selected':'')+'>'+w+'</option>').join('')+'</select></span>'
+      +'<label class="nogoal'+(g.none?' on':'')+'"><input type="checkbox" class="nogoalcb"'+(g.none?' checked':'')+'> No goal</label></div>';
+  }
+  /* "No goal": the use case still runs its steps and reports where it is now, with no target */
+  function setNoGoal(gr,on){
+    const cb=gr.querySelector('.nogoalcb');if(cb)cb.checked=on;
+    gr.querySelectorAll('.goalin,.goalwin').forEach(x=>x.disabled=on);
+    const gi=gr.querySelector('.ginline');if(gi)gi.classList.toggle('nog',on);
+    const lb=gr.querySelector('.nogoal');if(lb)lb.classList.toggle('on',on);
   }
   /* "set the goal to −40%" / "goal 10% in 60 days" — used by the chat and the card's Copilot box */
   function goalFromText(card,text){
     const gr=card&&card.querySelector('.egoalrow');if(!gr)return '';
+    if(/\b(no goal|remove the goal|drop the goal|without a goal)\b/i.test(text)){setNoGoal(gr,true);return 'no goal';}
     const m=text.match(/goal\D{0,12}?([−+-]?\s?\d+(?:\.\d+)?\s?%)/i);if(!m)return '';
     const v=m[1].replace(/\s/g,'').replace(/^-/,'−');
+    setNoGoal(gr,false);
     gr.querySelector('.goalin').value=v;
     const w=text.match(/(\d+)\s*days/i);if(w&&['30','60','90'].indexOf(w[1])>-1)gr.querySelector('.goalwin').value=w[1]+' days';
     return 'goal '+v+(w?' in '+w[1]+' days':'');
@@ -1916,7 +1940,22 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
     const gr=card.querySelector('.egoalrow'),G=GOALS[name];
     if(gr&&G){
       const ng=gr.querySelector('.goalin').value.trim().replace(/^-/,'−'),nw=gr.querySelector('.goalwin').value;
-      if(ng&&(ng!==G.goal||nw!==G.win)){
+      const none=!!(gr.querySelector('.nogoalcb')||{}).checked;
+      const tr0=[...document.querySelectorAll('#p-overview tbody tr')].find(r=>r.querySelector('b')&&r.querySelector('b').textContent.trim()===name);
+      const swap=(from,to)=>{
+        if(SYNOPSIS[name])SYNOPSIS[name]=SYNOPSIS[name].replace(from,to);
+        const syn=card.querySelector('.syn');if(syn)syn.textContent=syn.textContent.replace(from,to);
+        const cell=tr0&&tr0.querySelector('td:last-child');if(cell)cell.textContent=cell.textContent.replace(from,to);
+      };
+      if(none&&!G.none){
+        changes.push('goal: '+G.goal+' in '+G.win+' → no goal');
+        G.none=true;swap(/goal [−+]?[\d.]+%/,'no goal');
+      }
+      else if(!none&&G.none&&ng){
+        changes.push('goal: no goal → '+ng+' in '+nw);
+        G.none=false;G.goal=ng;G.win=nw;swap(/no goal/,'goal '+ng);
+      }
+      else if(!none&&ng&&(ng!==G.goal||nw!==G.win)){
         changes.push('goal: '+G.goal+' → '+ng+' in '+nw);
         G.goal=ng;G.win=nw;
         const re=/goal [−+]?[\d.]+%/;
@@ -2235,6 +2274,7 @@ html, body, #root { margin: 0px; height: 100%; width: 100%; }
   }
   /* ===== delegation ===== */
   function clearFlag(name){const c=[...document.querySelectorAll('#p-uc .uc')].find(x=>x.querySelector('.ucname').textContent.trim()===name);const f=c&&c.querySelector('.cflag');if(f)f.remove();}
+  document.addEventListener('change',e=>{const cb=e.target;if(cb.classList&&cb.classList.contains('nogoalcb')){const gr=cb.closest('.egoalrow');if(gr)setNoGoal(gr,cb.checked);}});
   document.addEventListener('click',e=>{
     const t=e.target;
     const cpb=t.closest&&t.closest('#cpPanel button');
